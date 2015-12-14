@@ -1,24 +1,11 @@
-%% Final Variables:
-
-% Errors in b
-%%% error_gauss_b 
-%%% error_steepest_b 
-
-% Errors in position
-%%% error_gauss_pos
-%%% error_steepest_pos
-
-% Loss Functions per iteration
-%%% loss_gauss
-%%% loss_steepest
-
-% xopt_gauss and xopt_steepest are the final results of position and b
-% given by each algorithm
+clc; clear; close all;
 
 %% Act 1
 alpha = 1;
 ER = 6370000;
 epsilon = 0.0000001;
+m = 256;
+sigma = 0.004;
 
 % Genie Information
 receiver_pos = [1; 0; 0];
@@ -29,7 +16,12 @@ sat4 = [1.4159; 0;      3.8904];
 b_actual = 2.354788068e-3;
 
 % Generating Pseudoranges
-yl = pseudorange([receiver_pos;b_actual]);
+yl = zeros(4,1);
+h_X = pseudorange([receiver_pos;b_actual]);
+for ii = 1:m
+    yl = yl + h_X + normrnd(0,sigma^2,4,1);
+end
+yl = yl/m;
 
 % Initial Conditions
 s = [0.9331; 0.25; 0.258819];
@@ -82,6 +74,7 @@ while(sqrt((xopt(:,end)-xopt(:,end-10))'*(xopt(:,end)-xopt(:,end-10))) > epsilon
     k = k+1;
 end
 xopt_gauss = xopt(:,end)
+param_error_cov = (H'*(m/sigma^2*eye(4))*H)^-1;
 
 %% Steepest Descent 
 epsilon = 0.00000000000001;
